@@ -1,5 +1,3 @@
 # Hello-World
-
-#Chevron li
-#5/14 2018
-
+# Chevron li
+# 5/14 2018
