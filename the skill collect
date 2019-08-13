@@ -21,7 +21,18 @@ sudo apt-get install libncurses5-dev libncursesw5-dev
 1. 
 
 
+### 删除原有gcc链接，重新建立软链接 ###
 
+1. cd /usr/bin 
+2. sudo rm -r gcc //移除之前的软链接
+3. sudo ln -sf gcc-5 gcc // 建立gcc-5的软链接 此处尝试使用gcc-5.5.0，但是报错
+4. sudo rm -r g++  //同上
+5. sudo ln -sf g++-5 g++  //同上
+
+作者：Pig_deng饲养员
+链接：https://www.jianshu.com/p/0caef3ce8e06
+来源：简书
+简书著作权归作者所有，任何形式的转载都请联系作者获得授权并注明出处。
 
 
 ### 是不是在使用ubuntu的时候特别是安装或更新的时候会出现下面的情况： ### 
