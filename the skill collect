@@ -1,0 +1,21 @@
+### linux kernel编译 ###
+1、error: code model kernel does not support PIC mode
+修改${kernel_path}/arch/x86/Makefile文件中的BITS := 64脚本代码块，添加一行来修改gcc的编译参数，KBUILD_CFLAGS += -fno-pic
+
+2、fatal error: linux/compiler-gcc7.h: No such file or directory
+问题原因是Ubuntu18.04安装build-essential时，默认安装的是gcc-7，但是在${kernel_path}目录下，我们查看支持的gcc文件头，find ./ -name compiler-gcc*得到如下结果：
+
+结果显示，只支持gcc-3，gcc-4，gcc-5，所以再安装一个gcc-5.
+sudo apt install gcc-5
+然后用update-alternatives重新建立一个gcc链接文件。
+再用sudo update-alternatives --config gcc选择gcc的版本为gcc-5，选择完成后，查看gcc版本号gcc --version（这里好像不能补全了）确认一下。
+
+3、fatal error: curses.h: No such file or directory
+sudo apt-get install libncurses5-dev libncursesw5-dev
+--------------------- 
+版权声明：本文为CSDN博主「今朝酒醒，来日方长」的原创文章，遵循CC 4.0 by-sa版权协议，转载请附上原文出处链接及本声明。
+原文链接：https://blog.csdn.net/stranger00001/article/details/84637032
+
+
+### gcc install ###
+1. 
