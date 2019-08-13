@@ -19,3 +19,22 @@ sudo apt-get install libncurses5-dev libncursesw5-dev
 
 ### gcc install ###
 1. 
+
+
+
+
+
+### 是不是在使用ubuntu的时候特别是安装或更新的时候会出现下面的情况： ### 
+E: Could not get lock /var/lib/dpkg/lock - open (11: Resource temporarily unavailable) 
+E: Unable to lock the administration directory (/var/lib/dpkg/), is another process using it? 导致没办法进行下去？
+
+在大部分情况下，问题的原因在于其它的程序如系统的自动更新、新立得等正在使用apt-get进程，所以解决方法也就是将这一进程关闭。
+具体如下：
+
+方法一：
+执行一下 sudo dpkg --configure -a
+方法二（亲测可以用）：
+sudo rm /var/lib/apt/lists/lock
+方法三：
+1、ps-aux 查出apt-get进程的PID,
+2、用sudo kill PID代码 杀死进程(我都是找出带apt字样的进程格杀勿论)
