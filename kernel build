@@ -1,0 +1,168 @@
+3.	Chrome OS Build
+3.1	The requirement of hardware and software：
+HOST	Ubuntu 16.04~19.04
+Hard Disk	SSD size> = 500GB
+Memory	Memory size >= 4GB
+CPU	Core >= 2 and Frequency >= 3.0GHz
+
+
+3.2	Configure Shadowsocks and privoxy 
+(Refer to https://ywnz.com/linuxjc/2687.html)
+Step1: Install  python-pip and Shadowsocks, privoxy
+sudo apt install python-pip
+sudo pip install shadowsocks
+sudo apt install privoxy
+
+Step2: Configure Shadowsocks
+sudo gedit /etc/shadowsocks.json
+在 shadowsocks.json 文件中写入：
+{ 
+"server":"代理服务器ip”,
+"server_port":代理服务器端口,
+"password":"代理服务器访问密码”,  
+"local_address":"127.0.0.1”, 
+"local_port":1080, 
+"timeout":600, 
+"method":"aes-256-cfb" // 代理服务器访问数据加密方式，根据自己配置ss 服务端时的配置自行填写
+}
+
+Step3: Start Shadowsocks
+sudo sslocal -c /etc/shadowsocks.json -d -start
+Step4: Privoxy
+sudo gedit /etc/privoxy/config
+打开文件找到4.1节 listen-address，找到#listen-address 127.0.0.1:8118，取消注释
+ 
+找到5.2节forward-socks4, forward-socks4a, forward-socks5 and forward-socks5t，
+找到#forward-socks5t / 127.0.0.1:9050 .（后面的.很重要，不能舍弃，端口值可能和我的不一样，改成1080即可）。
+ 
+Step5: Restart privoxy
+sudo /etc/init.d/privoxy restart
+Step6: edit .bashrc
+sudo gedit ~/.bashrc
+打开文件后，加入：
+export http_proxy="127.0.0.1:8118"
+export https_proxy="127.0.0.1:8118"
+export ftp_proxy="127.0.0.1:8118"
+保存退出后，终端也就可以使用代理了，我们来试一下 curl：
+ 
+有返回，则说明配置成功。
+
+Note: The next table content is not necessary
+配置 Shadowsocks privoxy 自启动
+每次重启之后，都需要手动启动 ss 和 privoxy 比较麻烦，所以可以添加自启动。
+由于ubuntu18.04不再使用initd管理系统，改用systemd。
+systemd 默认读取 /etc/systemd/system 下的配置文件，该目录下的文件会链接/lib/systemd/system/下的文件。
+rc-local.service就是我们需要配置的文件,先创建软连接：
+ln -fs /lib/systemd/system/rc-local.service /etc/systemd/system/rc-local.service
+该脚本内容为：
+#  SPDX-License-Identifier: LGPL-2.1+
+#
+#  This file is part of systemd.
+#
+#  systemd is free software; you can redistribute it and/or modify it
+#  under the terms of the GNU Lesser General Public License as published by
+#  the Free Software Foundation; either version 2.1 of the License, or
+#  (at your option) any later version.
+# This unit gets pulled automatically into multi-user.target by
+# systemd-rc-local-generator if /etc/rc.local is executable.
+[Unit]
+Description=/etc/rc.local Compatibility
+Documentation=man:systemd-rc-local-generator(8)
+ConditionFileIsExecutable=/etc/rc.local
+After=network.target
+[Service]
+Type=forking
+ExecStart=/etc/rc.local start
+TimeoutSec=0
+RemainAfterExit=yes
+GuessMainPID=no
+一般正常的启动文件主要分成三部分：
+1.[Unit] 段: 启动顺序与依赖关系
+2.[Service] 段: 启动行为,如何启动，启动类型
+3.[Install] 段: 定义如何安装这个配置文件，即怎样做到开机启动
+很明显上面的脚本中少了 Install段，也就没有定义如何做到开机启动，配置无法生效。所以在该文件中加上：
+[Install]
+WantedBy=multi-user.target
+Alias=rc-local.service
+然后创建/etc/rc.local文件：
+touch /etc/rc.local
+chmod 755 /etc/rc.local
+然后编辑该文件，加入以下脚本：
+#!/bin/bash
+sudo sslocal -c /etc/shadowsocks.json -d start
+sudo /etc/init.d/privoxy start
+保存退出，执行reboot重启系统。
+
+3.3	Setup build environment(Under ubuntu command line)
+Step1: Install the git and subversion revision control systems, the curl download helper, and lvm tools.
+sudo apt-get install git-core gitk git-gui subversion curl lvm2 thin-provisioning-tools python-pkg-resources python-virtualenv python-oauth2client
+
+Step2: Configure Git
+git config --global user.email "you@example.com"  
+git config --global user.name "Your Name"
+git config --global http.proxy 'socks5://127.0.0.1:1080' 
+git config --global https.proxy 'socks5://127.0.0.1:1080'
+
+step3: get the source code
+Copy chromeos.tar.gz from \\tb-wh-store\801\Public\Drivers\Linux\Google_bh720_environment
+mkdir /home/work 
+tar -zvxf chromeos.tar.gz --exclude chromeos/chroot.img --exclude chromeos/chroot -C /home/work/
+
+step4: install depot_tools
+cd /home/work
+git clone https://chromium.googlesource.com/chromium/tools/depot_tools.git
+export PATH=/path/to/depot_tools:$PATH
+
+step5: enter build environment
+cd /home/work/chromeos
+cros_sdk
+cros_sdk –enter
+
+step6: use script to build image
+../build.sh to run the script under /home/work/chromeos/src
+
+step7: flash the image to usb
+cros flash usb:// ../build/images/kahlee/latest/
+ 
+4.	Linux kernel build
+4.1	The requirement of hardware and software：
+HOST	Ubuntu 18.04
+Hard Disk	SSD size> = 500GB
+Memory	Memory size >= 4GB
+CPU	Core >= 2 and Frequency >= 3.0GHz
+
+4.2	setup build environment
+step1: install essential tool
+sudo apt install build-essential git libncurses5-dev openssl libssl-dev
+
+step2: get the source code
+copy linux.tar.gz from \\tb-wh-store\801\Public\Drivers\Linux\linux-source-code
+mkdir /home/work 
+tar –zvxf linux.tar.gz –C  /home/work
+
+step3: switch the source code to the version you want
+cd /home/work/linux
+git tag to display the exists version 
+ 
+git checkout –b V5.1 v5.1 to create a new branch and checkout v5.2 to it.
+ 
+
+Step4: configure kernel
+make menuconfig
+select MMC/SD/SDIO card support - as module like blow picture. Save the .config
+ 
+
+Step5: generate a img file.
+make bzImage  –j6
+make modules –j6
+make modules_install
+make install
+
+step6: edit boot menu to select the boot kernel version.
+vi /etc/default/grub
+sudo update-grub
+Change GRUB_TIMEOUT value to 10.(means wait 10s when enter OS)
+ 
+
+Select the special kernel to enter
+Enter our special kernel which can load/unload mmc_core module.
