@@ -49,3 +49,24 @@ sudo rm /var/lib/apt/lists/lock
 方法三：
 1、ps-aux 查出apt-get进程的PID,
 2、用sudo kill PID代码 杀死进程(我都是找出带apt字样的进程格杀勿论)
+
+创建不带历史记录的分支
+1.Checkout
+   git checkout --orphan latest_branch
+2. Add all the files
+   git add -A
+3. Commit the changes
+   git commit -am "commit message"
+
+4. push the local branch to remote
+   git push origin dbg_lichen_star:dbg_lichen_star
+
+4. Delete the branch
+   git branch -D master
+5.Rename the current branch to master
+   git branch -m master
+6.Finally, force update your repository
+   git push -f origin master
+————————————————
+版权声明：本文为CSDN博主「yanchengyc」的原创文章，遵循 CC 4.0 BY-SA 版权协议，转载请附上原文出处链接及本声明。
+原文链接：https://blog.csdn.net/yc1022/article/details/56487680
