@@ -70,3 +70,16 @@ sudo rm /var/lib/apt/lists/lock
 ————————————————
 版权声明：本文为CSDN博主「yanchengyc」的原创文章，遵循 CC 4.0 BY-SA 版权协议，转载请附上原文出处链接及本声明。
 原文链接：https://blog.csdn.net/yc1022/article/details/56487680
+
+
+Failed to connect to 127.0.0.1 port 8888 :conection refused
+其实很简单。发现是系统自动开启了127.0.0.1 prot 8888的代理，
+此时，可以检测试下，是不是电脑端的 8888的端口被占用了。
+env | grep -i proxy
+果不其然
+被占用了。
+
+solution: export http_proxy=''
+————————————————
+版权声明：本文为CSDN博主「Jamin_正宗红罐辣酱」的原创文章，遵循 CC 4.0 BY-SA 版权协议，转载请附上原文出处链接及本声明。
+原文链接：https://blog.csdn.net/jamin0107/article/details/54380326
